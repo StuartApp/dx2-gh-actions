@@ -96,51 +96,162 @@ jobs:
         run: make validate
 
   validate-schemas-beta:
-    needs: sync-manifests
-    uses: ./.github/workflows/validate-manifests-env.yaml
-    with:
-      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      environment: beta
+    runs-on:
+      - self-hosted
+      - stuart-beta
+    steps:
+      - name: Retrieve manifests
+        id: retrieve-manifests
+        uses: actions/cache@v3
+        with:
+          path: .changed_manifests
+          key: ${{ inputs.cache_key }}
+      - name: install kubeclt
+        uses: azure/setup-kubectl@v2.0
+      - name: Kubectl dry-run
+        run: |
+          if [ -d .changed_manifests/beta ]; then
+            echo "Manifests for beta were found, running validation"
+            ls -R .changed_manifests/
+            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/beta/
+          else
+            echo "Manifests for beta not found, skipping validation"
+          fi
 
   validate-schemas-dev:
-    needs: sync-manifests
-    uses: ./.github/workflows/validate-manifests-env.yaml
-    with:
-      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      environment: dev
+    runs-on:
+      - self-hosted
+      - stuart-dev
+    steps:
+      - name: Retrieve manifests
+        id: retrieve-manifests
+        uses: actions/cache@v3
+        with:
+          path: .changed_manifests
+          key: ${{ inputs.cache_key }}
+      - name: install kubeclt
+        uses: azure/setup-kubectl@v2.0
+      - name: Kubectl dry-run
+        run: |
+          if [ -d .changed_manifests/dev ]; then
+            echo "Manifests for dev were found, running validation"
+            ls -R .changed_manifests/
+            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/dev/
+          else
+            echo "Manifests for dev not found, skipping validation"
+          fi
 
   validate-schemas-dispload:
-    needs: sync-manifests
-    uses: ./.github/workflows/validate-manifests-env.yaml
-    with:
-      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      environment: dispload
+    runs-on:
+      - self-hosted
+      - stuart-dispload
+    steps:
+      - name: Retrieve manifests
+        id: retrieve-manifests
+        uses: actions/cache@v3
+        with:
+          path: .changed_manifests
+          key: ${{ inputs.cache_key }}
+      - name: install kubeclt
+        uses: azure/setup-kubectl@v2.0
+      - name: Kubectl dry-run
+        run: |
+          if [ -d .changed_manifests/dispload ]; then
+            echo "Manifests for dispload were found, running validation"
+            ls -R .changed_manifests/
+            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/dispload/
+          else
+            echo "Manifests for dispload not found, skipping validation"
+          fi
 
   validate-schemas-mgmt:
-    needs: sync-manifests
-    uses: ./.github/workflows/validate-manifests-env.yaml
-    with:
-      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      environment: mgmt
+    runs-on:
+      - self-hosted
+      - stuart-mgmt
+    steps:
+      - name: Retrieve manifests
+        id: retrieve-manifests
+        uses: actions/cache@v3
+        with:
+          path: .changed_manifests
+          key: ${{ inputs.cache_key }}
+      - name: install kubeclt
+        uses: azure/setup-kubectl@v2.0
+      - name: Kubectl dry-run
+        run: |
+          if [ -d .changed_manifests/mgmt ]; then
+            echo "Manifests for mgmt were found, running validation"
+            ls -R .changed_manifests/
+            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/mgmt/
+          else
+            echo "Manifests for mgmt not found, skipping validation"
+          fi
 
   validate-schemas-prod:
-    needs: sync-manifests
-    uses: ./.github/workflows/validate-manifests-env.yaml
-    with:
-      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      environment: prod
+    runs-on:
+      - self-hosted
+      - stuart-prod
+    steps:
+      - name: Retrieve manifests
+        id: retrieve-manifests
+        uses: actions/cache@v3
+        with:
+          path: .changed_manifests
+          key: ${{ inputs.cache_key }}
+      - name: install kubeclt
+        uses: azure/setup-kubectl@v2.0
+      - name: Kubectl dry-run
+        run: |
+          if [ -d .changed_manifests/prod ]; then
+            echo "Manifests for prod were found, running validation"
+            ls -R .changed_manifests/
+            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/prod/
+          else
+            echo "Manifests for prod not found, skipping validation"
+          fi
 
   validate-schemas-qa:
-    needs: sync-manifests
-    uses: ./.github/workflows/validate-manifests-env.yaml
-    with:
-      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      environment: qa
+    runs-on:
+      - self-hosted
+      - stuart-qa
+    steps:
+      - name: Retrieve manifests
+        id: retrieve-manifests
+        uses: actions/cache@v3
+        with:
+          path: .changed_manifests
+          key: ${{ inputs.cache_key }}
+      - name: install kubeclt
+        uses: azure/setup-kubectl@v2.0
+      - name: Kubectl dry-run
+        run: |
+          if [ -d .changed_manifests/qa ]; then
+            echo "Manifests for qa were found, running validation"
+            ls -R .changed_manifests/
+            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/qa/
+          else
+            echo "Manifests for qa not found, skipping validation"
+          fi
 
   validate-schemas-sandbox:
-    needs: sync-manifests
-    uses: ./.github/workflows/validate-manifests-env.yaml
-    with:
-      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      environment: sandbox
-
+    runs-on:
+      - self-hosted
+      - stuart-sandbox
+    steps:
+      - name: Retrieve manifests
+        id: retrieve-manifests
+        uses: actions/cache@v3
+        with:
+          path: .changed_manifests
+          key: ${{ inputs.cache_key }}
+      - name: install kubeclt
+        uses: azure/setup-kubectl@v2.0
+      - name: Kubectl dry-run
+        run: |
+          if [ -d .changed_manifests/sandbox ]; then
+            echo "Manifests for sandbox were found, running validation"
+            ls -R .changed_manifests/
+            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/sandbox/
+          else
+            echo "Manifests for sandbox not found, skipping validation"
+          fi
