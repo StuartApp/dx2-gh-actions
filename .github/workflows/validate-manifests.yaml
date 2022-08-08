@@ -26,6 +26,9 @@ on:
         description: "The configuration files for the service to be synced (relative to the manifests directory) separated by comma"
         required: true
         type: string
+    secrets:
+      gh_token:
+        required: true
 
 jobs:
   sync-manifests:
@@ -38,7 +41,7 @@ jobs:
         with:
           repository: ${{ inputs.git_repo }}
           path: service
-          token: ${{ secrets.STUARTBOT_PERSONAL_ACCESS_TOKEN }}
+          token: ${{ secrets.gh_token }}
           ref: ${{ inputs.git_pr_branch }}
           fetch-depth: 0
 
