@@ -1,0 +1,143 @@
+---
+name: Sync manifests
+
+on:
+  workflow_dispatch:
+    inputs:
+      git_repo:
+        description: "The repository that contains the manifests (e.g. stuartapp/dx2-demo)"
+        required: true
+        type: string
+      git_branch:
+        description: "The branch to get the manifests from (e.g. main)"
+        required: true
+        type: string
+      manifests_dir:
+        description: "Path of manifests directory in the git repository"
+        required: true
+        type: string
+      service_config_files:
+        description: "The configuration files for the service to be synced (relative to the manifests directory) separated by comma"
+        required: true
+        type: string
+      ship:
+        description: "Ship owner of the service"
+        required: true
+        type: string
+      service_name:
+        description: "Service name that is being updated"
+        required: true
+        type: string
+      environments:
+        description: "Environments (separated by comma) that these changes will be deployed to"
+        required: true
+        type: string
+      commit_sha:
+        description: "Commit that triggered this change"
+        required: true
+        type: string
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.git_repo }}
+          path: service
+          token: ${{ secrets.STUARTBOT_PERSONAL_ACCESS_TOKEN }}
+          ref: ${{ inputs.git_branch }}
+
+      - uses: actions/checkout@v3
+        with:
+          path: k8s-manifests
+
+      - name: Sync manifests
+        id: sync-manifests
+        working-directory: k8s-manifests
+        env:
+          ENVIRONMENTS: ${{ inputs.environments }}
+          DATA_VALUES_FILES: ${{ inputs.service_config_files }}
+        run: |
+          cp -r ../service/${{ inputs.manifests_dir }} .manifests
+          make manifests-sync
+          actions_user_id=`id -u $USER`
+          echo ::set-output name=uid::$actions_user_id
+          sudo rm -rf .manifests
+
+      - name: Correct Ownership in GITHUB_WORKSPACE directory
+        uses: peter-murray/reset-workspace-ownership-action@v1
+        with:
+          user_id: ${{ steps.sync-manifests.outputs.uid }}
+
+      - name: Ignore if manifests didn't change
+        id: sync-made-changes
+        continue-on-error: true
+        run: git diff --exit-code services
+
+      - name: Create AutoMerge PR
+        id: cpr
+        if: steps.sync-made-changes.outcome == 'failure'
+        uses: peter-evans/create-pull-request@v4
+        with:
+          path: k8s-manifests
+          token: ${{ secrets.STUARTBOT_PERSONAL_ACCESS_TOKEN }}
+          commit-message: Sync manifests of ${{ inputs.git_repo }} in ${{ inputs.environments }} environment
+          branch: gh-pr
+          branch-suffix: random
+          delete-branch: true
+          title: Sync manifests of ${{ inputs.git_repo }} in ${{ inputs.environments }} environment
+          body: |
+            Sync manifests
+            Ship: ${{ inputs.ship }}
+            Service name: ${{ inputs.service_name }}
+            Commit: https://github.com/${{ inputs.git_repo }}/commit/${{ inputs.commit_sha }}
+          labels: |
+            automerge
+            deploy
+
+      - name: Print pull request output
+        if: steps.sync-made-changes.outcome == 'failure'
+        run: |
+          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
+          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+          echo "Pull Request SHA - ${{ steps.cpr.outputs.pull-request-head-sha }}"
+
+      - name: Auto approve PR
+        uses: hmarr/auto-approve-action@v2
+        if: steps.sync-made-changes.outcome == 'failure'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+
+      - name: Wait for tests to succeed
+        uses: lewagon/wait-on-check-action@v1.1.1
+        with:
+          ref: ${{ steps.cpr.outputs.pull-request-head-sha }}
+          repo-token: ${{ secrets.STUARTBOT_PERSONAL_ACCESS_TOKEN }}
+          wait-interval: 10
+
+      - id: automerge
+        name: Merge PR
+        if: steps.sync-made-changes.outcome == 'failure'
+        uses: "pascalgn/automerge-action@v0.15.2"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PULL_REQUEST: ${{ steps.cpr.outputs.pull-request-number }}
+          MERGE_METHOD: squash
+
+      - name: Print pull request merging result
+        if: steps.sync-made-changes.outcome == 'failure'
+        run: |
+          echo "Pull request ${{ steps.automerge.outputs.mergeResult }}"
+          echo "Pull request ${{ steps.automerge.outputs.pullRequestNumber }}"
+
+      - name: Sync application
+        if: steps.sync-made-changes.outcome == 'failure'
+        working-directory: k8s-manifests
+        env:
+          ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ENVIRONMENTS: ${{ inputs.environments }}
+          SERVICE_NAME: ${{ inputs.service_name }}
+        run: make argo-wait
+

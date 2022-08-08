@@ -1,0 +1,36 @@
+---
+name: Validate manifests in env
+on:
+  workflow_call:
+    inputs:
+      cache_key:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+
+jobs:
+  validate:
+    runs-on:
+      - self-hosted
+      - stuart-${{ inputs.environment }}
+    steps:
+      - name: Retrieve manifests
+        id: retrieve-manifests
+        uses: actions/cache@v3
+        with:
+          path: .changed_manifests
+          key: ${{ inputs.cache_key }}
+      - name: install kubeclt
+        uses: azure/setup-kubectl@v2.0
+      - name: Kubectl dry-run
+        run: |
+          if [ -d .changed_manifests/${{ inputs.environment }} ]; then
+            echo "Manifests for ${{ inputs.environment }} were found, running validation"
+            ls -R .changed_manifests/
+            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/${{ inputs.environment }}/
+          else
+            echo "Manifests for ${{ inputs.environment }} not found, skipping validation"
+          fi
+

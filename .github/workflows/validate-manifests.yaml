@@ -1,0 +1,146 @@
+---
+name: Validate Manifests
+
+on:
+  workflow_dispatch:
+    inputs:
+      git_repo:
+        description: "The repository that contains the manifests (e.g. stuartapp/dx2-demo)"
+        required: true
+        type: string
+      git_pr_branch:
+        description: "The branch with manifests changes"
+        required: true
+        type: string
+      git_main_branch:
+        description: "The main branch of the repository (default: main)"
+        required: true
+        type: string
+        default: main
+      manifests_dir:
+        description: "Path of manifests directory in the git repository"
+        required: true
+        type: string
+        default: manifests
+      service_config_files:
+        description: "The configuration files for the service to be synced (relative to the manifests directory) separated by comma"
+        required: true
+        type: string
+
+jobs:
+  sync-manifests:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout k8s-manifests
+
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.git_repo }}
+          path: service
+          token: ${{ secrets.STUARTBOT_PERSONAL_ACCESS_TOKEN }}
+          ref: ${{ inputs.git_pr_branch }}
+          fetch-depth: 0
+
+      - name: Apply changes
+        working-directory: service
+        run: git merge origin/${{ inputs.git_main_branch }}
+
+      - name: Sync manifests
+        id: sync-manifests
+        env:
+          DATA_VALUES_FILES: ${{ inputs.service_config_files }}
+        run: |
+          cp -r service/${{ inputs.manifests_dir }} .manifests
+          make manifests-sync
+          sudo rm -rf .manifests
+
+      - name: Cache all manifests
+        uses: actions/cache@v3
+        env:
+          cache-name: manifests
+        with:
+          path: .changed_manifests
+          key: manifests-${{ github.run_id }}-${{ github.run_number }}
+
+  check-policies:
+    needs: sync-manifests
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Retrieve manifests
+        id: retrieve-manifests
+        uses: actions/cache@v3
+        with:
+          path: .changed_manifests
+          key: manifests-${{ github.run_id }}-${{ github.run_number }}
+      - name: Validate kyverno policies
+        if: steps.retrieve-manifests.outputs.cache-hit == 'true'
+        run: make kyverno
+
+  run-tests:
+    needs: sync-manifests
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Retrieve manifests
+        id: retrieve-manifests
+        uses: actions/cache@v3
+        with:
+          path: .changed_manifests
+          key: manifests-${{ github.run_id }}-${{ github.run_number }}
+      - name: Run validator
+        if: steps.retrieve-manifests.outputs.cache-hit == 'true'
+        run: make validate
+
+  validate-schemas-beta:
+    needs: sync-manifests
+    uses: ./.github/workflows/validate-manifests-env.yaml
+    with:
+      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
+      environment: beta
+
+  validate-schemas-dev:
+    needs: sync-manifests
+    uses: ./.github/workflows/validate-manifests-env.yaml
+    with:
+      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
+      environment: dev
+
+  validate-schemas-dispload:
+    needs: sync-manifests
+    uses: ./.github/workflows/validate-manifests-env.yaml
+    with:
+      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
+      environment: dispload
+
+  validate-schemas-mgmt:
+    needs: sync-manifests
+    uses: ./.github/workflows/validate-manifests-env.yaml
+    with:
+      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
+      environment: mgmt
+
+  validate-schemas-prod:
+    needs: sync-manifests
+    uses: ./.github/workflows/validate-manifests-env.yaml
+    with:
+      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
+      environment: prod
+
+  validate-schemas-qa:
+    needs: sync-manifests
+    uses: ./.github/workflows/validate-manifests-env.yaml
+    with:
+      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
+      environment: qa
+
+  validate-schemas-sandbox:
+    needs: sync-manifests
+    uses: ./.github/workflows/validate-manifests-env.yaml
+    with:
+      cache_key: manifests-${{ github.run_id }}-${{ github.run_number }}
+      environment: sandbox
+
