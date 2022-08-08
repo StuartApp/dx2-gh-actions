@@ -14,12 +14,12 @@ on:
         type: string
       git_main_branch:
         description: "The main branch of the repository (default: main)"
-        required: true
+        required: false
         type: string
         default: main
       manifests_dir:
         description: "Path of manifests directory in the git repository"
-        required: true
+        required: false
         type: string
         default: manifests
       service_config_files:
@@ -96,6 +96,7 @@ jobs:
         run: make validate
 
   validate-schemas-beta:
+    needs: sync-manifests
     runs-on:
       - self-hosted
       - stuart-beta
@@ -119,6 +120,7 @@ jobs:
           fi
 
   validate-schemas-dev:
+    needs: sync-manifests
     runs-on:
       - self-hosted
       - stuart-dev
@@ -142,6 +144,7 @@ jobs:
           fi
 
   validate-schemas-dispload:
+    needs: sync-manifests
     runs-on:
       - self-hosted
       - stuart-dispload
@@ -165,6 +168,7 @@ jobs:
           fi
 
   validate-schemas-mgmt:
+    needs: sync-manifests
     runs-on:
       - self-hosted
       - stuart-mgmt
@@ -188,6 +192,7 @@ jobs:
           fi
 
   validate-schemas-prod:
+    needs: sync-manifests
     runs-on:
       - self-hosted
       - stuart-prod
@@ -211,6 +216,7 @@ jobs:
           fi
 
   validate-schemas-qa:
+    needs: sync-manifests
     runs-on:
       - self-hosted
       - stuart-qa
@@ -234,6 +240,7 @@ jobs:
           fi
 
   validate-schemas-sandbox:
+    needs: sync-manifests
     runs-on:
       - self-hosted
       - stuart-sandbox
