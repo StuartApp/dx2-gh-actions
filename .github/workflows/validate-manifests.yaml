@@ -26,6 +26,10 @@ on:
         description: "The configuration files for the service to be synced (relative to the manifests directory) separated by comma"
         required: true
         type: string
+      environments:
+        description: "Environments (separated by comma) that these changes will be tested"
+        required: true
+        type: string
     secrets:
       gh_token:
         required: true
@@ -56,6 +60,7 @@ jobs:
       - name: Sync manifests
         id: sync-manifests
         env:
+          ENVIRONMENTS: ${{ inputs.environments }}
           DATA_VALUES_FILES: ${{ inputs.service_config_files }}
         run: |
           cp -r service/${{ inputs.manifests_dir }} .manifests
