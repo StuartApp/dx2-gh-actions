@@ -85,7 +85,7 @@ jobs:
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: k8s-manifests
+          path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: Validate kyverno policies
         working-directory: k8s-manifests
