@@ -72,26 +72,21 @@ jobs:
         env:
           cache-name: manifests
         with:
-          path: .changed_manifests
+          path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
 
   check-policies:
     needs: sync-manifests
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          repository: stuartapp/k8s-manifests
-          ref: main
-          token: ${{ secrets.gh_token }}
-      - name: Retrieve manifests
+      - name: Retrieve k8s-manifests
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: .changed_manifests
+          path: k8s-manifests
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: Validate kyverno policies
+        working-directory: k8s-manifests
         if: steps.retrieve-manifests.outputs.cache-hit == 'true'
         run: make kyverno
 
@@ -99,19 +94,14 @@ jobs:
     needs: sync-manifests
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          repository: stuartapp/k8s-manifests
-          ref: main
-          token: ${{ secrets.gh_token }}
-      - name: Retrieve manifests
+      - name: Retrieve k8s-manifests
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: .changed_manifests
+          path: k8s-manifests
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: Run validator
+        working-directory: k8s-manifests
         if: steps.retrieve-manifests.outputs.cache-hit == 'true'
         run: make validate
 
@@ -121,15 +111,16 @@ jobs:
       - self-hosted
       - stuart-beta
     steps:
-      - name: Retrieve manifests
+      - name: Retrieve k8s-manifests
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: .changed_manifests
-          key: ${{ inputs.cache_key }}
+          path: k8s-manifests
+          key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
+        working-directory: k8s-manifests
         run: |
           if [ -d .changed_manifests/beta ]; then
             echo "Manifests for beta were found, running validation"
@@ -145,15 +136,16 @@ jobs:
       - self-hosted
       - stuart-dev
     steps:
-      - name: Retrieve manifests
+      - name: Retrieve k8s-manifests
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: .changed_manifests
-          key: ${{ inputs.cache_key }}
+          path: k8s-manifests
+          key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
+        working-directory: k8s-manifests
         run: |
           if [ -d .changed_manifests/dev ]; then
             echo "Manifests for dev were found, running validation"
@@ -169,15 +161,16 @@ jobs:
       - self-hosted
       - stuart-dispload
     steps:
-      - name: Retrieve manifests
+      - name: Retrieve k8s-manifests
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: .changed_manifests
-          key: ${{ inputs.cache_key }}
+          path: k8s-manifests
+          key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
+        working-directory: k8s-manifests
         run: |
           if [ -d .changed_manifests/dispload ]; then
             echo "Manifests for dispload were found, running validation"
@@ -193,15 +186,16 @@ jobs:
       - self-hosted
       - stuart-mgmt
     steps:
-      - name: Retrieve manifests
+      - name: Retrieve k8s-manifests
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: .changed_manifests
-          key: ${{ inputs.cache_key }}
+          path: k8s-manifests
+          key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
+        working-directory: k8s-manifests
         run: |
           if [ -d .changed_manifests/mgmt ]; then
             echo "Manifests for mgmt were found, running validation"
@@ -217,15 +211,16 @@ jobs:
       - self-hosted
       - stuart-prod
     steps:
-      - name: Retrieve manifests
+      - name: Retrieve k8s-manifests
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: .changed_manifests
-          key: ${{ inputs.cache_key }}
+          path: k8s-manifests
+          key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
+        working-directory: k8s-manifests
         run: |
           if [ -d .changed_manifests/prod ]; then
             echo "Manifests for prod were found, running validation"
@@ -241,15 +236,16 @@ jobs:
       - self-hosted
       - stuart-qa
     steps:
-      - name: Retrieve manifests
+      - name: Retrieve k8s-manifests
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: .changed_manifests
-          key: ${{ inputs.cache_key }}
+          path: k8s-manifests
+          key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
+        working-directory: k8s-manifests
         run: |
           if [ -d .changed_manifests/qa ]; then
             echo "Manifests for qa were found, running validation"
@@ -265,15 +261,16 @@ jobs:
       - self-hosted
       - stuart-sandbox
     steps:
-      - name: Retrieve manifests
+      - name: Retrieve k8s-manifests
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: .changed_manifests
-          key: ${{ inputs.cache_key }}
+          path: k8s-manifests
+          key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
+        working-directory: k8s-manifests
         run: |
           if [ -d .changed_manifests/sandbox ]; then
             echo "Manifests for sandbox were found, running validation"
