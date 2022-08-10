@@ -72,7 +72,7 @@ jobs:
         env:
           cache-name: manifests
         with:
-          path: .
+          path: ./*
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
 
   check-policies:
@@ -83,7 +83,7 @@ jobs:
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: .
+          path: k8s-manifests
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: Validate kyverno policies
         working-directory: k8s-manifests
@@ -94,12 +94,6 @@ jobs:
     needs: sync-manifests
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v3
-        name: Checkout k8s-manifests
-        with:
-          repository: stuartapp/k8s-manifests
-          ref: main
-          token: ${{ secrets.gh_token }}
       - name: Retrieve k8s-manifests
         id: retrieve-manifests
         uses: actions/cache@v3
