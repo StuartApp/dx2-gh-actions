@@ -85,6 +85,11 @@ jobs:
         with:
           path: k8s-manifests
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
+          restore-keys: |
+            manifests-${{ github.run_id }}-${{ github.run_number }}
+            manifests-${{ github.run_id }}-
+            manifests-
+
       - name: Validate kyverno policies
         working-directory: k8s-manifests
         if: steps.retrieve-manifests.outputs.cache-hit == 'true'
