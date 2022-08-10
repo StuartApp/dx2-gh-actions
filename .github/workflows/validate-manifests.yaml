@@ -74,6 +74,9 @@ jobs:
         with:
           path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
+      - name: check dir
+        run: ls
+
 
   check-policies:
     needs: sync-manifests
