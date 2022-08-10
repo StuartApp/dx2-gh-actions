@@ -85,21 +85,10 @@ jobs:
           repository: stuartapp/k8s-manifests
           ref: main
           token: ${{ secrets.gh_token }}
-      - name: Retrieve k8s-manifests
-        id: retrieve-manifests
-        uses: actions/cache@v3
-        with:
-          path: k8s-manifests
-          key: manifests-${{ github.run_id }}-${{ github.run_number }}
-          restore-keys: |
-            manifests-${{ github.run_id }}-${{ github.run_number }}
-            manifests-${{ github.run_id }}-
-            manifests-
       - name: check dir
         run: ls -a
       - name: Validate kyverno policies
-        working-directory: k8s-manifests
-        if: steps.retrieve-manifests.outputs.cache-hit == 'true'
+        working-directory: .
         run: make kyverno
 
   run-tests:
