@@ -74,8 +74,6 @@ jobs:
         with:
           path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      - name: check dir
-        run: ls -a
 
   check-policies:
     needs: sync-manifests
@@ -96,6 +94,12 @@ jobs:
     needs: sync-manifests
     runs-on: self-hosted
     steps:
+      - uses: actions/checkout@v3
+        name: Checkout k8s-manifests
+        with:
+          repository: stuartapp/k8s-manifests
+          ref: main
+          token: ${{ secrets.gh_token }}
       - name: Retrieve k8s-manifests
         id: retrieve-manifests
         uses: actions/cache@v3
