@@ -72,7 +72,7 @@ jobs:
         env:
           cache-name: manifests
         with:
-          path: ./services
+          path: services
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
 
   check-policies:
