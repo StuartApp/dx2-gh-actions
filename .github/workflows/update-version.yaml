@@ -32,11 +32,15 @@ concurrency:
 
 jobs:
   update_version:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
         with:
           ref: main
+      - name: Download yq
+        run: |
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
       - name: Update version
         env:
           CONFIG_FILE: ${{ inputs.manifests_dir }}/${{ inputs.service_config_file }}
