@@ -4,42 +4,41 @@ name: Sync manifests
 on:
   workflow_call:
     inputs:
-      git_repo:
-        description: "The repository that contains the manifests (e.g. stuartapp/dx2-demo)"
-        required: true
+      ship:
+        description: "Ship owner of the service"
+        required: false
         type: string
+        default: dx2
+      service_name:
+        description: "Service name that is being updated"
+        required: false
+        type: string
+        default: demo-service
       git_branch:
         description: "The branch with manifests changes"
         required: false
         type: string
         default: main
-      manifests_dir:
-        description: "Path of manifests directory"
-        required: false
-        type: string
-        default: manifests
       service_config_files:
         description: "The configuration files for the service to be synced (relative to the manifests directory) separated by comma"
         required: true
         type: string
-      ship:
-        description: "Ship owner of the service"
-        required: true
-        type: string
-        default: dx2
-      service_name:
-        description: "Service name that is being updated"
-        required: true
-        type: string
-        default: demo-service
       environments:
         description: "Environments (separated by comma) that these changes will be deployed to"
         required: true
         type: string
+      manifests_dir:
+        description: "Path of manifests directory in the git repository"
+        required: false
+        type: string
+        default: manifests
       commit_sha:
         description: "Commit that triggered this change"
         required: true
         type: string
+    secrets:
+      gh_token:
+        required: true
 jobs:
   deploy:
     runs-on: self-hosted
