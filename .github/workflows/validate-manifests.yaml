@@ -100,10 +100,10 @@ jobs:
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: k8s-manifests
+          path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: Run validator
-        working-directory: k8s-manifests
+        working-directory: .
         if: steps.retrieve-manifests.outputs.cache-hit == 'true'
         run: make validate
 
@@ -117,12 +117,12 @@ jobs:
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: k8s-manifests
+          path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
-        working-directory: k8s-manifests
+        working-directory: .
         run: |
           if [ -d .changed_manifests/beta ]; then
             echo "Manifests for beta were found, running validation"
@@ -142,12 +142,12 @@ jobs:
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: k8s-manifests
+          path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
-        working-directory: k8s-manifests
+        working-directory: .
         run: |
           if [ -d .changed_manifests/dev ]; then
             echo "Manifests for dev were found, running validation"
@@ -167,12 +167,12 @@ jobs:
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: k8s-manifests
+          path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
-        working-directory: k8s-manifests
+        working-directory: .
         run: |
           if [ -d .changed_manifests/dispload ]; then
             echo "Manifests for dispload were found, running validation"
@@ -192,12 +192,12 @@ jobs:
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: k8s-manifests
+          path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
-        working-directory: k8s-manifests
+        working-directory: .
         run: |
           if [ -d .changed_manifests/mgmt ]; then
             echo "Manifests for mgmt were found, running validation"
@@ -217,12 +217,12 @@ jobs:
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: k8s-manifests
+          path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
-        working-directory: k8s-manifests
+        working-directory: .
         run: |
           if [ -d .changed_manifests/prod ]; then
             echo "Manifests for prod were found, running validation"
@@ -242,12 +242,12 @@ jobs:
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: k8s-manifests
+          path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
-        working-directory: k8s-manifests
+        working-directory: .
         run: |
           if [ -d .changed_manifests/qa ]; then
             echo "Manifests for qa were found, running validation"
@@ -267,12 +267,12 @@ jobs:
         id: retrieve-manifests
         uses: actions/cache@v3
         with:
-          path: k8s-manifests
+          path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
       - name: install kubeclt
         uses: azure/setup-kubectl@v2.0
       - name: Kubectl dry-run
-        working-directory: k8s-manifests
+        working-directory: .
         run: |
           if [ -d .changed_manifests/sandbox ]; then
             echo "Manifests for sandbox were found, running validation"
