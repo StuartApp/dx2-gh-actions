@@ -2,7 +2,7 @@
 name: Sync manifests
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       git_repo:
         description: "The repository that contains the manifests (e.g. stuartapp/dx2-demo)"
@@ -47,28 +47,31 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
+        name: Checkout k8s-manifests
+        with:
+          repository: stuartapp/k8s-manifests
+          ref: main
+          token: ${{ secrets.gh_token }}
+
+      - uses: actions/checkout@v3
         with:
           repository: ${{ inputs.git_repo }}
           path: service
           token: ${{ secrets.gh_token }}
           ref: ${{ inputs.git_branch }}
 
-      - uses: actions/checkout@v3
-        with:
-          path: k8s-manifests
-
       - name: Sync manifests
         id: sync-manifests
-        working-directory: k8s-manifests
         env:
           ENVIRONMENTS: ${{ inputs.environments }}
           DATA_VALUES_FILES: ${{ inputs.service_config_files }}
         run: |
-          cp -r ../service/${{ inputs.manifests_dir }} .manifests
+          cp -r service/${{ inputs.manifests_dir }} .manifests
           make manifests-sync
           actions_user_id=`id -u $USER`
           echo ::set-output name=uid::$actions_user_id
           sudo rm -rf .manifests
+          sudo rm -rf service
 
       - name: Correct Ownership in GITHUB_WORKSPACE directory
         uses: peter-murray/reset-workspace-ownership-action@v1
@@ -140,7 +143,6 @@ jobs:
 
       - name: Sync application
         if: steps.sync-made-changes.outcome == 'failure'
-        working-directory: k8s-manifests
         env:
           ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
           ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
