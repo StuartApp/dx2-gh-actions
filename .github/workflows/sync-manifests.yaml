@@ -41,6 +41,14 @@ on:
     secrets:
       gh_token:
         required: true
+      docker_user:
+        required: true
+      docker_pass:
+        required: true
+
+env:
+  DOCKER_REGISTRY_USER: ${{ secrets.docker_user }}
+  DOCKER_REGISTRY_PASSWORD: ${{ secrets.docker_pass }}
 
 jobs:
   deploy:
@@ -67,7 +75,7 @@ jobs:
           DATA_VALUES_FILES: ${{ inputs.service_config_files }}
         run: |
           cp -r service/${{ inputs.manifests_dir }} .manifests
-          make manifests-sync
+          make docker-login sync-manifests
           actions_user_id=`id -u $USER`
           echo ::set-output name=uid::$actions_user_id
           sudo rm -rf .manifests
@@ -125,4 +133,4 @@ jobs:
           ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
           ENVIRONMENTS: ${{ inputs.environments }}
           SERVICE_NAME: ${{ inputs.service_name }}
-        run: make argo-wait
+        run: make docker-login wait-for-deploy
