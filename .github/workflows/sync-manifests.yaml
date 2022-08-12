@@ -127,4 +127,4 @@ jobs:
           repo: k8s-manifests
           github_token: ${{ secrets.gh_token }}
           workflow_file_name: merge-pr.yaml
-          client_payload: '{"pull-request-number":"${{ steps.cpr.outputs.pull-request-number }}"}'
+          client_payload: '{"pull-request-number":"${{ steps.cpr.outputs.pull-request-number }}","environments":"${{ inputs.environments }}","service_name":"${{ inputs.service_name }}"}'
