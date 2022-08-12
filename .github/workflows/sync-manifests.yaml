@@ -110,20 +110,13 @@ jobs:
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
           echo "Pull Request SHA - ${{ steps.cpr.outputs.pull-request-head-sha }}"
 
-      - id: automerge
-        name: Merge PR
-        if: steps.sync-made-changes.outcome == 'failure'
-        uses: pascalgn/automerge-action@v0.15.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.gh_token }}
-          PULL_REQUEST: ${{ steps.cpr.outputs.pull-request-number }}
-          MERGE_METHOD: squash
-
-      - name: Print pull request merging result
-        if: steps.sync-made-changes.outcome == 'failure'
-        run: |
-          echo "Pull request ${{ steps.automerge.outputs.mergeResult }}"
-          echo "Pull request ${{ steps.automerge.outputs.pullRequestNumber }}"
+      - uses: convictional/trigger-workflow-and-wait@v1.6.1
+        with:
+          owner: stuartapp
+          repo: k8s-manifests
+          github_token: ${{ secrets.gh_token }}
+          workflow_file_name: merge-pr.yaml
+          client_payload: '{"pull-request-number":"${{ steps.cpr.outputs.pull-request-number }}"}'
 
       - name: Sync application
         if: steps.sync-made-changes.outcome == 'failure'
