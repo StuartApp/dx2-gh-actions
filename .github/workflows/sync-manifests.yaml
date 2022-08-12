@@ -38,6 +38,10 @@ on:
         description: "Commit that triggered this change"
         required: true
         type: string
+    secrets:
+      gh_token:
+        required: true
+
 jobs:
   deploy:
     runs-on: self-hosted
@@ -46,7 +50,7 @@ jobs:
         with:
           repository: ${{ inputs.git_repo }}
           path: service
-          token: ${{ secrets.GHA_TRIGGER_TOKEN }}
+          token: ${{ secrets.gh_token }}
           ref: ${{ inputs.git_branch }}
 
       - uses: actions/checkout@v3
@@ -82,7 +86,7 @@ jobs:
         uses: peter-evans/create-pull-request@v4
         with:
           path: k8s-manifests
-          token: ${{ secrets.STUARTBOT_PERSONAL_ACCESS_TOKEN }}
+          token: ${{ secrets.gh_token }}
           commit-message: Sync manifests of ${{ inputs.git_repo }} in ${{ inputs.environments }} environment
           branch: gh-pr
           branch-suffix: random
@@ -108,7 +112,7 @@ jobs:
         uses: hmarr/auto-approve-action@v2
         if: steps.sync-made-changes.outcome == 'failure'
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.gh_token }}
           pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
 
       - name: Wait for tests to succeed
@@ -116,7 +120,7 @@ jobs:
         if: steps.sync-made-changes.outcome == 'failure'
         with:
           ref: ${{ steps.cpr.outputs.pull-request-head-sha }}
-          repo-token: ${{ secrets.GHA_TRIGGER_TOKEN }}
+          repo-token: ${{ secrets.gh_token }}
           wait-interval: 10
 
       - id: automerge
@@ -124,7 +128,7 @@ jobs:
         if: steps.sync-made-changes.outcome == 'failure'
         uses: "pascalgn/automerge-action@v0.15.2"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.gh_token }}
           PULL_REQUEST: ${{ steps.cpr.outputs.pull-request-number }}
           MERGE_METHOD: squash
 
