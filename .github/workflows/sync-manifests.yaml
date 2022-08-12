@@ -88,7 +88,6 @@ jobs:
         if: steps.sync-made-changes.outcome == 'failure'
         uses: peter-evans/create-pull-request@v4
         with:
-          path: k8s-manifests
           token: ${{ secrets.gh_token }}
           commit-message: Sync manifests of ${{ inputs.git_repo }} in ${{ inputs.environments }} environment
           branch: gh-pr
