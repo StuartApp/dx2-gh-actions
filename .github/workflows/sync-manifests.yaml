@@ -10,18 +10,20 @@ on:
         type: string
       git_branch:
         description: "The branch to get the manifests from (e.g. main)"
-        required: true
+        required: false
         type: string
+        default: main
       manifests_dir:
         description: "Path of manifests directory in the git repository"
-        required: true
+        required: false
         type: string
+        default: manifests
       service_config_files:
         description: "The configuration files for the service to be synced (relative to the manifests directory) separated by comma"
         required: true
         type: string
-      ship:
-        description: "Ship owner of the service"
+      team:
+        description: "Team owner of the service"
         required: true
         type: string
       service_name:
@@ -44,7 +46,7 @@ jobs:
         with:
           repository: ${{ inputs.git_repo }}
           path: service
-          token: ${{ secrets.STUARTBOT_PERSONAL_ACCESS_TOKEN }}
+          token: ${{ secrets.GHA_TRIGGER_TOKEN }}
           ref: ${{ inputs.git_branch }}
 
       - uses: actions/checkout@v3
@@ -88,7 +90,7 @@ jobs:
           title: Sync manifests of ${{ inputs.git_repo }} in ${{ inputs.environments }} environment
           body: |
             Sync manifests
-            Ship: ${{ inputs.ship }}
+            Team: ${{ inputs.team }}
             Service name: ${{ inputs.service_name }}
             Commit: https://github.com/${{ inputs.git_repo }}/commit/${{ inputs.commit_sha }}
           labels: |
@@ -114,7 +116,7 @@ jobs:
         if: steps.sync-made-changes.outcome == 'failure'
         with:
           ref: ${{ steps.cpr.outputs.pull-request-head-sha }}
-          repo-token: ${{ secrets.STUARTBOT_PERSONAL_ACCESS_TOKEN }}
+          repo-token: ${{ secrets.GHA_TRIGGER_TOKEN }}
           wait-interval: 10
 
       - id: automerge

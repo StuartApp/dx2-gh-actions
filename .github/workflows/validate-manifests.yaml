@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       git_repo:
-        description: "The repository that contains the manifests (e.g. stuartapp/dx2-demo)"
+        description: "The service repository that contains the manifests (e.g. stuartapp/dx2-demo)"
         required: true
         type: string
       git_pr_branch:

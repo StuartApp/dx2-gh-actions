@@ -4,13 +4,21 @@ name: Update version
 on:
   workflow_call:
     inputs:
-      manifests_dir:
-        description: "Path of manifests directory"
+      git_repo:
+        description: "The repository that contains the manifests (e.g. stuartapp/dx2-demo)"
+        required: true
+        type: string
+      git_branch:
+        description: "The branch to get the manifests from (e.g. main)"
         required: false
         type: string
-        default: manifests
-      service_config_file:
-        description: "The configuration file for the service to be synced (relative to the manifests directory)"
+        default: main
+      service_name:
+        description: "Service name that is being updated"
+        required: true
+        type: string
+      environment:
+        description: "Environment that this version update will be deployed to"
         required: true
         type: string
       file:
@@ -22,8 +30,8 @@ on:
         required: false
         type: string
         default: .images[0].newTag
-      commit_sha:
-        description: "Commit that triggered this change"
+      new_version:
+        description: "New version to be set"
         required: true
         type: string
 
@@ -32,22 +40,20 @@ concurrency:
 
 jobs:
   update_version:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: main
+          repository: ${{ inputs.git_repo }}
+          token: ${{ secrets.GHA_TRIGGER_TOKEN }}
+          ref: ${{ inputs.git_branch }}
       - name: Update version
-        env:
-          CONFIG_FILE: ${{ inputs.manifests_dir }}/${{ inputs.service_config_file }}
-        run: |
-          echo "SERVICE_NAME=$(yq '.service_name' $CONFIG_FILE)" >> $GITHUB_ENV
-          echo "ENVIRONMENT=$(yq '.env' $CONFIG_FILE)" >> $GITHUB_ENV
-          yq -i "${{ inputs.version_json_path }} = \"${{ inputs.commit_sha }}\"" "${{ inputs.file }}"
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i "${{ inputs.version_json_path }} = \"${{ inputs.new_version }}\"" "${{ inputs.file }}"
       - name: Push new version
         uses: EndBug/add-and-commit@v9
         with:
-          message: Update ${{ env.SERVICE_NAME }} to version ${{ inputs.commit_sha }} in ${{ env.ENVIRONMENT }} environment
-          tag: 'release-${{ env.ENVIRONMENT }}-${{ inputs.commit_sha }}'
-          default_author: github_actions
+          message: "[skip actions] Update ${{ inputs.service_name }} to version ${{ inputs.new_version }} in ${{ inputs.environment }} environment"
+          default_author: github_actor
           pull: '--rebase --autostash'
