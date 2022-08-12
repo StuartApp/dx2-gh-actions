@@ -53,7 +53,7 @@ jobs:
       - name: Update version
         uses: mikefarah/yq@master
         with:
-          cmd: yq -i "${{ inputs.version_json_path }} = \"${{ inputs.new_version }}\"" "${{ inputs.file }}"
+          cmd: yq -i '${{ inputs.version_json_path }} = "${{ inputs.new_version }}"' '${{ inputs.file }}'
       - name: Push new version
         uses: EndBug/add-and-commit@v9
         with:
