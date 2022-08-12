@@ -42,9 +42,6 @@ on:
       gh_token:
         required: true
 
-concurrency:
-  group: sync-manifests
-
 jobs:
   deploy:
     runs-on: self-hosted

@@ -38,9 +38,6 @@ on:
       gh_token:
         required: true
 
-concurrency:
-  group: update-version
-
 jobs:
   update_version:
     runs-on:

@@ -34,10 +34,6 @@ on:
       gh_token:
         required: true
 
-concurrency:
-  group: validate-manifests
-  cancel-in-progress: true
-
 jobs:
   sync-manifests:
     runs-on: self-hosted
