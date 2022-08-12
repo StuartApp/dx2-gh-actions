@@ -110,22 +110,6 @@ jobs:
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
           echo "Pull Request SHA - ${{ steps.cpr.outputs.pull-request-head-sha }}"
 
-      - name: Approve PR
-        uses: juliangruber/approve-pull-request-action@v1.1.1
-        if: steps.sync-made-changes.outcome == 'failure'
-        with:
-          github-token: ${{ secrets.gh_token }}
-          repo: stuartapp/k8s-manifests
-          number: ${{ steps.cpr.outputs.pull-request-number }}
-
-      - name: Wait for tests to succeed
-        uses: lewagon/wait-on-check-action@v1.1.1
-        if: steps.sync-made-changes.outcome == 'failure'
-        with:
-          ref: ${{ steps.cpr.outputs.pull-request-head-sha }}
-          repo-token: ${{ secrets.gh_token }}
-          wait-interval: 10
-
       - id: automerge
         name: Merge PR
         if: steps.sync-made-changes.outcome == 'failure'
