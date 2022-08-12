@@ -119,18 +119,11 @@ jobs:
           echo "Pull Request SHA - ${{ steps.cpr.outputs.pull-request-head-sha }}"
 
       - uses: convictional/trigger-workflow-and-wait@v1.6.1
+        name: Merge PR and wait until service is deployed
+        if: steps.sync-made-changes.outcome == 'failure'
         with:
           owner: stuartapp
           repo: k8s-manifests
           github_token: ${{ secrets.gh_token }}
           workflow_file_name: merge-pr.yaml
           client_payload: '{"pull-request-number":"${{ steps.cpr.outputs.pull-request-number }}"}'
-
-      - name: Sync application
-        if: steps.sync-made-changes.outcome == 'failure'
-        env:
-          ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
-          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
-          ENVIRONMENTS: ${{ inputs.environments }}
-          SERVICE_NAME: ${{ inputs.service_name }}
-        run: make docker-login wait-for-deploy
