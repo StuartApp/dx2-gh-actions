@@ -93,8 +93,6 @@ jobs:
         with:
           path: .
           key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      - name: check dir
-        run: ls -a
       - name: Validate kyverno policies
         working-directory: .
         if: steps.retrieve-manifests.outputs.cache-hit == 'true'
