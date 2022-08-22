@@ -92,14 +92,6 @@ jobs:
         continue-on-error: true
         run: git diff --exit-code services
 
-      - name: Docker login
-        if: steps.sync-made-changes.outcome == 'failure'
-        uses: docker/login-action@v2
-        with:
-          registry: docker-registry.internal.stuart.com
-          username: ${{ secrets.docker_user }}
-          password: ${{ secrets.docker_pass }}
-
       - name: Run tests
         if: steps.sync-made-changes.outcome == 'failure'
         run: make validate-policies validate-manifests
