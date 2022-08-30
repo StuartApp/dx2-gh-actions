@@ -73,6 +73,7 @@ jobs:
         id: sync-manifests
         env:
           ENVIRONMENTS: ${{ inputs.environments }}
+          COMMIT_URL: https://github.com/${{ inputs.git_repo }}/commit/${{ inputs.commit_sha }}
           DATA_VALUES_FILES: ${{ inputs.service_config_files }}
         run: |
           cp -r service/${{ inputs.manifests_dir }} .manifests
