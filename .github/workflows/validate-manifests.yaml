@@ -130,9 +130,14 @@ jobs:
       - name: Kubectl dry-run
         working-directory: .
         run: |
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
           if [ -d .changed_manifests/beta ]; then
             echo "Manifests for beta were found, running validation"
             ls -R .changed_manifests/
+            for FILE in $(find .changed_manifests -name '*.yaml'); do
+              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
+            done
             kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/beta/
           else
             echo "Manifests for beta not found, skipping validation"
@@ -155,9 +160,14 @@ jobs:
       - name: Kubectl dry-run
         working-directory: .
         run: |
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
           if [ -d .changed_manifests/dev ]; then
             echo "Manifests for dev were found, running validation"
             ls -R .changed_manifests/
+            for FILE in $(find .changed_manifests -name '*.yaml'); do
+              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
+            done
             kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/dev/
           else
             echo "Manifests for dev not found, skipping validation"
@@ -180,9 +190,14 @@ jobs:
       - name: Kubectl dry-run
         working-directory: .
         run: |
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
           if [ -d .changed_manifests/dispload ]; then
             echo "Manifests for dispload were found, running validation"
             ls -R .changed_manifests/
+            for FILE in $(find .changed_manifests -name '*.yaml'); do
+              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
+            done
             kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/dispload/
           else
             echo "Manifests for dispload not found, skipping validation"
@@ -205,9 +220,14 @@ jobs:
       - name: Kubectl dry-run
         working-directory: .
         run: |
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
           if [ -d .changed_manifests/mgmt ]; then
             echo "Manifests for mgmt were found, running validation"
             ls -R .changed_manifests/
+            for FILE in $(find .changed_manifests -name '*.yaml'); do
+              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
+            done
             kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/mgmt/
           else
             echo "Manifests for mgmt not found, skipping validation"
@@ -230,9 +250,14 @@ jobs:
       - name: Kubectl dry-run
         working-directory: .
         run: |
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
           if [ -d .changed_manifests/prod ]; then
             echo "Manifests for prod were found, running validation"
             ls -R .changed_manifests/
+            for FILE in $(find .changed_manifests -name '*.yaml'); do
+              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
+            done
             kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/prod/
           else
             echo "Manifests for prod not found, skipping validation"
@@ -255,9 +280,14 @@ jobs:
       - name: Kubectl dry-run
         working-directory: .
         run: |
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
           if [ -d .changed_manifests/qa ]; then
             echo "Manifests for qa were found, running validation"
             ls -R .changed_manifests/
+            for FILE in $(find .changed_manifests -name '*.yaml'); do
+              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
+            done
             kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/qa/
           else
             echo "Manifests for qa not found, skipping validation"
@@ -280,9 +310,14 @@ jobs:
       - name: Kubectl dry-run
         working-directory: .
         run: |
+          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
           if [ -d .changed_manifests/sandbox ]; then
             echo "Manifests for sandbox were found, running validation"
             ls -R .changed_manifests/
+            for FILE in $(find .changed_manifests -name '*.yaml'); do
+              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
+            done
             kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/sandbox/
           else
             echo "Manifests for sandbox not found, skipping validation"
