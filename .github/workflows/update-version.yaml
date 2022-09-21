@@ -34,6 +34,11 @@ on:
         description: "New version to be set"
         required: true
         type: string
+      git_environment:
+        description: "Environment use in github workflow"
+        required: false
+        default: ""
+        type: string
     secrets:
       gh_token:
         required: true
@@ -43,6 +48,7 @@ jobs:
     runs-on:
       - self-hosted
       - stuart-${{ inputs.environment }}
+    environment: ${{ inputs.git_environment }}
     steps:
       - uses: actions/checkout@v3
         with:
