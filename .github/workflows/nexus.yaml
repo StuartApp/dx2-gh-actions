@@ -1,0 +1,42 @@
+---
+name: Push to Nexus
+
+on:
+  workflow_call:
+    secrets:
+      gh_token:
+        required: true
+      nexus_user:
+        required: true
+      nexus_password:
+        required: true
+
+jobs:
+  push:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get Helm
+        uses: azure/setup-helm@v3
+        with:
+          token: ${{ secrets.gh_token }}
+
+      - name: Create Helm package
+        id: helmpkg
+        run: |
+          set -o pipefail
+          PKG=$(make package | tail -n1 | awk -F '/' '{printf $NF}')
+          echo ::set-output name=helm_package_name::$PKG
+
+      - name: Push to Nexus
+        env:
+          NEXUS_USER: ${{ secrets.nexus_user }}
+          NEXUS_PASS: ${{ secrets.nexus_password }}
+          HELM_PKG_NAME: ${{ steps.helmpkg.outputs.helm_package_name }}
+        run: |
+          curl https://nexus.internal.stuart.com/repository/helm-internal/ \
+          --upload-file ${{ env.HELM_PKG_NAME }} \
+          --user ${{ env.NEXUS_USER }}:${{ env.NEXUS_PASS }} \
+          --verbose
