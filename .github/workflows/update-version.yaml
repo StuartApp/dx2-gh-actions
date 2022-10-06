@@ -47,7 +47,6 @@ jobs:
   update_version:
     runs-on:
       - self-hosted
-      - stuart-${{ inputs.environment }}
     environment: ${{ inputs.git_environment }}
     steps:
       - uses: actions/checkout@v3
