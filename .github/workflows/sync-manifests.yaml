@@ -85,7 +85,7 @@ jobs:
           cp -r service/${{ inputs.manifests_dir }} .manifests
           make docker-login sync-manifests
           actions_user_id=`id -u $USER`
-          echo ::set-output name=uid::$actions_user_id
+          echo "uid=${actions_user_id}" >> $GITHUB_OUTPUT
           sudo rm -rf .manifests
           sudo rm -rf service
 
