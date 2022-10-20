@@ -28,7 +28,7 @@ jobs:
         run: |
           set -o pipefail
           PKG=$(make package | tail -n1 | awk -F '/' '{printf $NF}')
-          echo ::set-output name=helm_package_name::$PKG
+          echo "helm_package_name=${PKG}" >> $GITHUB_OUTPUT
 
       - name: Push to Nexus
         env:
