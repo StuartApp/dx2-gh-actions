@@ -138,7 +138,7 @@ jobs:
             for FILE in $(find .changed_manifests -name '*.yaml'); do
               yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
             done
-            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/beta/
+            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/beta/
           else
             echo "Manifests for beta not found, skipping validation"
           fi
@@ -168,7 +168,7 @@ jobs:
             for FILE in $(find .changed_manifests -name '*.yaml'); do
               yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
             done
-            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/dev/
+            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/dev/
           else
             echo "Manifests for dev not found, skipping validation"
           fi
@@ -198,7 +198,7 @@ jobs:
             for FILE in $(find .changed_manifests -name '*.yaml'); do
               yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
             done
-            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/dispload/
+            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/dispload/
           else
             echo "Manifests for dispload not found, skipping validation"
           fi
@@ -228,7 +228,7 @@ jobs:
             for FILE in $(find .changed_manifests -name '*.yaml'); do
               yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
             done
-            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/mgmt/
+            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/mgmt/
           else
             echo "Manifests for mgmt not found, skipping validation"
           fi
@@ -258,7 +258,7 @@ jobs:
             for FILE in $(find .changed_manifests -name '*.yaml'); do
               yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
             done
-            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/prod/
+            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/prod/
           else
             echo "Manifests for prod not found, skipping validation"
           fi
@@ -288,7 +288,7 @@ jobs:
             for FILE in $(find .changed_manifests -name '*.yaml'); do
               yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
             done
-            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/qa/
+            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/qa/
           else
             echo "Manifests for qa not found, skipping validation"
           fi
@@ -318,7 +318,7 @@ jobs:
             for FILE in $(find .changed_manifests -name '*.yaml'); do
               yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
             done
-            kubectl apply --validate=true --dry-run=server -R -f .changed_manifests/sandbox/
+            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/sandbox/
           else
             echo "Manifests for sandbox not found, skipping validation"
           fi
