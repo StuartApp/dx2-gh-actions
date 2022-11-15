@@ -101,7 +101,7 @@ jobs:
 
       - name: Run tests
         if: steps.sync-made-changes.outcome == 'failure'
-        run: make validate-policies validate-manifests
+        run: make validate-manifests
 
       - name: Create AutoMerge PR
         id: cpr
