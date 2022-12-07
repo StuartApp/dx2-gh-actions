@@ -1,0 +1,71 @@
+---
+name: E2E with Kind
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: "Environment that this service will be deployed to execute e2e test"
+        required: true
+        type: string
+      file:
+        description: "Relative path of the file to get the e2e yaml configuration"
+        required: true
+        type: string
+      git_environment:
+        description: "Environment use in github workflow"
+        required: false
+        default: ""
+        type: string
+      debug:
+        description: "Activate debug mode to have verbose logs"
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      gh_token:
+        required: true
+
+jobs:
+  e2e-kind:
+    runs-on:
+      - self-hosted
+    environment: ${{ inputs.git_environment }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.gh_token }}
+    steps:
+      - name: Checkout Current Service
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+          fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
+      - name: Checkout StuartKube
+        uses: actions/checkout@v3
+        with:
+          repository: "StuartApp/stuartkube"
+          ref: main
+          path: "stuartkube"
+          token: ${{ secrets.gh_token }}
+      - uses: azure/setup-helm@v3
+        with:
+          version: "v3.9.0"
+          token: ${{ secrets.gh_token }}
+      # Prepare test environment and execute Post commands
+      - name: E2e environment (Debug)
+        if: inputs.debug
+        run: DEBUG=1 $PWD/stuartkube/bin/linux-amd64/skc local load ${{ inputs.environment }} -c ${{ inputs.file }}
+      - name: E2e environment
+        if: "!inputs.debug"
+        run: $PWD/stuartkube/bin/linux-amd64/skc local load ${{ inputs.environment }} -c ${{ inputs.file }}
+      - name: Save logs
+        if: failure()
+        run: DEBUG=1 $PWD/stuartkube/bin/linux-amd64/skc local logs ${{ inputs.environment }} -c ${{ inputs.file }}
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: e2e-logs-artifact
+          path: .skc/dev/logs/
+          retention-days: 1
+      # Stop test environment and cleanup
+      - run: $PWD/stuartkube/bin/linux-amd64/skc local stop
