@@ -43,6 +43,17 @@ env:
   DOCKER_REGISTRY_PASSWORD: ${{ secrets.docker_pass }}
 
 jobs:
+  matrix:
+    runs-on: self-hosted
+    steps:
+      - name: JSON stringify - environments
+        id: parse-environments
+        run: >-
+          echo "environments=[\"${environments//','/\",\"}\"]" >> $GITHUB_OUTPUT
+        env:
+          environments: ${{ inputs.environments }}
+    outputs:
+      environments: ${{ steps.parse-environments.outputs.environments }}
   sync-manifests:
     runs-on: self-hosted
     steps:
@@ -113,11 +124,14 @@ jobs:
         if: steps.retrieve-manifests.outputs.cache-hit == 'true'
         run: make docker-login validate-manifests
 
-  validate-schemas-beta:
-    needs: sync-manifests
+  validate-schemas:
+    needs: [matrix, sync-manifests]
+    strategy:
+      matrix:
+        env: ${{fromJSON(needs.matrix.outputs.environments)}}
     runs-on:
       - self-hosted
-      - stuart-beta
+      - stuart-${{ matrix.env }}
     steps:
       - name: Retrieve k8s-manifests
         id: retrieve-manifests
@@ -132,193 +146,13 @@ jobs:
         run: |
           sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
           sudo chmod +x /usr/bin/yq
-          if [ -d .changed_manifests/beta ]; then
-            echo "Manifests for beta were found, running validation"
+          if [ -d .changed_manifests/${{ matrix.env }} ]; then
+            echo "Manifests for ${{ matrix.env }} were found, running validation"
             ls -R .changed_manifests/
             for FILE in $(find .changed_manifests -name '*.yaml'); do
               yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
             done
-            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/beta/
+            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/${{ matrix.env }}/
           else
-            echo "Manifests for beta not found, skipping validation"
-          fi
-
-  validate-schemas-dev:
-    needs: sync-manifests
-    runs-on:
-      - self-hosted
-      - stuart-dev
-    steps:
-      - name: Retrieve k8s-manifests
-        id: retrieve-manifests
-        uses: actions/cache@v3
-        with:
-          path: .
-          key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      - name: install kubeclt
-        uses: azure/setup-kubectl@v2.0
-      - name: Kubectl dry-run
-        working-directory: .
-        run: |
-          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          if [ -d .changed_manifests/dev ]; then
-            echo "Manifests for dev were found, running validation"
-            ls -R .changed_manifests/
-            for FILE in $(find .changed_manifests -name '*.yaml'); do
-              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
-            done
-            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/dev/
-          else
-            echo "Manifests for dev not found, skipping validation"
-          fi
-
-  validate-schemas-dispload:
-    needs: sync-manifests
-    runs-on:
-      - self-hosted
-      - stuart-dispload
-    steps:
-      - name: Retrieve k8s-manifests
-        id: retrieve-manifests
-        uses: actions/cache@v3
-        with:
-          path: .
-          key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      - name: install kubeclt
-        uses: azure/setup-kubectl@v2.0
-      - name: Kubectl dry-run
-        working-directory: .
-        run: |
-          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          if [ -d .changed_manifests/dispload ]; then
-            echo "Manifests for dispload were found, running validation"
-            ls -R .changed_manifests/
-            for FILE in $(find .changed_manifests -name '*.yaml'); do
-              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
-            done
-            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/dispload/
-          else
-            echo "Manifests for dispload not found, skipping validation"
-          fi
-
-  validate-schemas-mgmt:
-    needs: sync-manifests
-    runs-on:
-      - self-hosted
-      - stuart-mgmt
-    steps:
-      - name: Retrieve k8s-manifests
-        id: retrieve-manifests
-        uses: actions/cache@v3
-        with:
-          path: .
-          key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      - name: install kubeclt
-        uses: azure/setup-kubectl@v2.0
-      - name: Kubectl dry-run
-        working-directory: .
-        run: |
-          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          if [ -d .changed_manifests/mgmt ]; then
-            echo "Manifests for mgmt were found, running validation"
-            ls -R .changed_manifests/
-            for FILE in $(find .changed_manifests -name '*.yaml'); do
-              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
-            done
-            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/mgmt/
-          else
-            echo "Manifests for mgmt not found, skipping validation"
-          fi
-
-  validate-schemas-prod:
-    needs: sync-manifests
-    runs-on:
-      - self-hosted
-      - stuart-prod
-    steps:
-      - name: Retrieve k8s-manifests
-        id: retrieve-manifests
-        uses: actions/cache@v3
-        with:
-          path: .
-          key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      - name: install kubeclt
-        uses: azure/setup-kubectl@v2.0
-      - name: Kubectl dry-run
-        working-directory: .
-        run: |
-          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          if [ -d .changed_manifests/prod ]; then
-            echo "Manifests for prod were found, running validation"
-            ls -R .changed_manifests/
-            for FILE in $(find .changed_manifests -name '*.yaml'); do
-              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
-            done
-            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/prod/
-          else
-            echo "Manifests for prod not found, skipping validation"
-          fi
-
-  validate-schemas-qa:
-    needs: sync-manifests
-    runs-on:
-      - self-hosted
-      - stuart-qa
-    steps:
-      - name: Retrieve k8s-manifests
-        id: retrieve-manifests
-        uses: actions/cache@v3
-        with:
-          path: .
-          key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      - name: install kubeclt
-        uses: azure/setup-kubectl@v2.0
-      - name: Kubectl dry-run
-        working-directory: .
-        run: |
-          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          if [ -d .changed_manifests/qa ]; then
-            echo "Manifests for qa were found, running validation"
-            ls -R .changed_manifests/
-            for FILE in $(find .changed_manifests -name '*.yaml'); do
-              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
-            done
-            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/qa/
-          else
-            echo "Manifests for qa not found, skipping validation"
-          fi
-
-  validate-schemas-sandbox:
-    needs: sync-manifests
-    runs-on:
-      - self-hosted
-      - stuart-sandbox
-    steps:
-      - name: Retrieve k8s-manifests
-        id: retrieve-manifests
-        uses: actions/cache@v3
-        with:
-          path: .
-          key: manifests-${{ github.run_id }}-${{ github.run_number }}
-      - name: install kubeclt
-        uses: azure/setup-kubectl@v2.0
-      - name: Kubectl dry-run
-        working-directory: .
-        run: |
-          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
-          sudo chmod +x /usr/bin/yq
-          if [ -d .changed_manifests/sandbox ]; then
-            echo "Manifests for sandbox were found, running validation"
-            ls -R .changed_manifests/
-            for FILE in $(find .changed_manifests -name '*.yaml'); do
-              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
-            done
-            kubectl apply --validate=true --dry-run=server --server-side --force-conflicts -R -f .changed_manifests/sandbox/
-          else
-            echo "Manifests for sandbox not found, skipping validation"
+            echo "Manifests for ${{ matrix.env }} not found, skipping validation"
           fi
