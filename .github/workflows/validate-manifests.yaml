@@ -161,4 +161,4 @@ jobs:
           done
 
           kubectl apply --validate=true --dry-run=server --server-side \
-            -force-conflicts -R -f .changed_manifests/${{ matrix.env }}/
+            --force-conflicts -R -f .changed_manifests/${{ matrix.env }}/
