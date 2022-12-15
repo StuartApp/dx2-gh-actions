@@ -41,6 +41,7 @@ on:
 env:
   DOCKER_REGISTRY_USER: ${{ secrets.docker_user }}
   DOCKER_REGISTRY_PASSWORD: ${{ secrets.docker_pass }}
+  YQ_RELEASE_URL: https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64
 
 jobs:
   matrix:
@@ -144,16 +145,20 @@ jobs:
       - name: Kubectl dry-run
         working-directory: .
         run: |
-          sudo wget -q https://github.com/mikefarah/yq/releases/download/v4.25.2/yq_linux_amd64 -O /usr/bin/yq
+          sudo wget -q $YQ_RELEASE_URL -O /usr/bin/yq
           sudo chmod +x /usr/bin/yq
-          if [ -d .changed_manifests/${{ matrix.env }} ]; then
-            echo "Manifests for ${{ matrix.env }} were found, running validation"
-            ls -R .changed_manifests/
-            for FILE in $(find .changed_manifests -name '*.yaml'); do
-              yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
-            done
-            kubectl apply --validate=true --dry-run=server --server-side \
-              --force-conflicts -R -f .changed_manifests/${{ matrix.env }}/
-          else
+
+          if [ ! -d .changed_manifests/${{ matrix.env }} ]; then
             echo "Manifests for ${{ matrix.env }} not found, skipping validation"
+            exit 0
           fi
+
+          echo "Manifests for ${{ matrix.env }} were found, running validation"
+          ls -R .changed_manifests/
+
+          for FILE in $(find .changed_manifests -name '*.yaml'); do
+            yq -i '.metadata.namespace = "dry-run-ns"' "$FILE"
+          done
+
+          kubectl apply --validate=true --dry-run=server --server-side \
+            -force-conflicts -R -f .changed_manifests/${{ matrix.env }}/
