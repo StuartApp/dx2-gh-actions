@@ -61,7 +61,7 @@ jobs:
         if: failure()
         with:
           name: e2e-logs-artifact
-          path: .skc/${{ inputs.git_environment }}/logs/
+          path: .skc/${{ inputs.environment }}/logs/
           retention-days: 1
       # Stop test environment and cleanup
       - run: $PWD/stuartkube/bin/linux-amd64/skc local stop
